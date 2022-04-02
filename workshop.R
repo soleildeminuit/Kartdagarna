@@ -76,7 +76,7 @@ t
 
 tmap_save(t, "figs/karta_deso_1.png", 
           units = "mm",
-          width = 297, height = 210, 
+          width = 210, height = 297, 
           dpi = 300)
 
 ###########################################################################
@@ -98,7 +98,7 @@ t
 
 tmap_save(t, "figs/karta_deso_2.png", 
           units = "mm",
-          width = 297, height = 210, 
+          width = 210, height = 297, 
           dpi = 300)
 
 ###########################################################################
@@ -121,7 +121,7 @@ t
 
 tmap_save(t, "figs/karta_deso_3.png", 
           units = "mm",
-          width = 297, height = 210, 
+          width = 210, height = 297, 
           dpi = 300)
 ###########################################################################
 
@@ -146,7 +146,7 @@ t
 
 tmap_save(t, "figs/karta_deso_4.png", 
           units = "mm",
-          width = 297, height = 210, 
+          width = 210, height = 297, 
           dpi = 300)
 
 ###########################################################################
@@ -174,7 +174,7 @@ t
 
 tmap_save(t, "figs/karta_deso_5.png", 
           units = "mm",
-          width = 297, height = 210, 
+          width = 210, height = 297, 
           dpi = 300)
 ###########################################################################
 
@@ -204,7 +204,7 @@ t
 
 tmap_save(t, "figs/karta_deso_6.png", 
           units = "mm",
-          width = 297, height = 210, 
+          width = 210, height = 297, 
           dpi = 300)
 ###########################################################################
 
@@ -237,7 +237,7 @@ t
 
 tmap_save(t, "figs/karta_deso_7.png", 
           units = "mm",
-          width = 297, height = 210, 
+          width = 210, height = 297, 
           dpi = 300)
 
 ###########################################################################
@@ -270,7 +270,7 @@ t
 
 tmap_save(t, "figs/karta_deso_8.png", 
           units = "mm",
-          width = 297, height = 210, 
+          width = 210, height = 297, 
           dpi = 300)
 
 
@@ -310,7 +310,7 @@ t
 
 tmap_save(t, "figs/karta_deso_9.png", 
           units = "mm",
-          width = 297, height = 210, 
+          width = 210, height = 297, 
           dpi = 300)
 
 ###########################################################################
@@ -352,7 +352,7 @@ t
 
 tmap_save(t, "figs/karta_deso_10.png", 
           units = "mm",
-          width = 297, height = 210, 
+          width = 210, height = 297, 
           dpi = 300)
 
 ###########################################################################
@@ -407,5 +407,69 @@ t
 
 tmap_save(t, "figs/karta_deso_11.png", 
           units = "mm",
-          width = 297, height = 210, 
+          width = 210, height = 297, 
+          dpi = 300)
+
+###########################################################################
+
+bef_stat <- pxdf %>% 
+  filter(grepl("^\\d{4}[A-C]\\d{4}$", region) == TRUE) %>% 
+  filter(
+    år == "2021", 
+    kön == "totalt", 
+    ålder != "totalt"
+  ) %>% 
+  select(-c(kön, år)) %>% 
+  group_by(region) %>% 
+  mutate(andel = round(100*(`Folkmängden per region` / sum(`Folkmängden per region`)),1)) %>% 
+  ungroup() %>% 
+  left_join(., koppling, by = c("region" = "DeSO")) %>% 
+  right_join(., deso, by = c("region" = "deso")) %>% 
+  arrange(region) %>% 
+  st_as_sf(.)
+
+bef_stat_5_9 <- bef_stat %>% 
+  filter(
+    ålder == "5-9 år", 
+    substr(region,1,4)=="1780"
+  )
+
+t <- tm_shape(bb_extended) + tm_borders(alpha = 0) + 
+  tm_shape(
+    bef_stat_5_9
+  ) +
+  tm_fill("andel", 
+          style = "jenks", 
+          title = "Andel 5-9 år (%)") +
+  tm_shape(
+    bef_stat_5_9
+  ) +
+  tm_borders() +
+  tm_shape(mv_17) + tm_fill(col = "cadetblue1", alpha = 0.7) +
+  tm_shape(skolenheter) +
+  tm_symbols(
+    title.size = "Antal elever",
+    size = "totalNumberOfPupils", 
+    col = "gray15", 
+    border.col = "grey15", 
+    alpha = 0.7) +
+  tm_text(
+    "name",
+    size = 0.5,
+    auto.placement = TRUE,
+    remove.overlap = TRUE,
+    col = "black") +
+  tm_credits("Kartdagarna 2022 | Datakällor: SCB, Lantmäteriet, Skolverket",
+             position=c("right", "bottom")) +
+  tm_scale_bar(position=c("left", "bottom")) +
+  tm_compass(type = "arrow", position=c("right", "top"), show.labels = 3) +
+  tm_layout(
+    main.title = "Andel 5-9 åringar per DeSO\nSkolenheter och antal elever",
+    legend.format=list(fun=function(x) formatC(x, digits=0, format="d", big.mark = " "), text.separator = "-")
+  )
+t
+
+tmap_save(t, "figs/karta_deso_12.png", 
+          units = "mm",
+          width = 210, height = 297, 
           dpi = 300)
