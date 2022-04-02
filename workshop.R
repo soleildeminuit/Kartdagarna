@@ -35,7 +35,8 @@ deso_karlstad <- pxdf %>%
   rename(bef_antal = `Folkmängden per region`)
 
 # Läg till geografi
-deso_karlstad <- left_join(deso_karlstad, deso, by = "deso")
+deso_karlstad <- left_join(deso_karlstad, deso, by = "deso") %>% 
+  st_as_sf()
 
 bb <- st_bbox(deso_karlstad) %>% 
   st_as_sfc() %>% st_as_sf()
