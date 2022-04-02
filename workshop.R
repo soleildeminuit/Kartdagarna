@@ -55,6 +55,7 @@ mv_17 <- mv_17 %>%
   filter(KATEGORI == "Vattenyta") %>% 
   st_intersection(deso_karlstad)
 
+skolenheter <- st_read("data/skolenheter.geojson")
 
 ###########################################################################
 t <- tm_shape(bb_extended) + tm_borders(alpha = 0) + 
@@ -214,7 +215,7 @@ t <- tm_shape(bb_extended) + tm_borders(alpha = 0) +
   tm_shape(
     deso_karlstad %>% 
       filter(substr(deso_karlstad$deso,5,5) == "C")
-    ) +
+  ) +
   tm_fill("bef_antal", style = "jenks", title = "folkmängd") +
   tm_shape(deso_karlstad) +
   tm_borders() +
@@ -249,7 +250,7 @@ t <- #tm_shape(bb_extended) + tm_borders(alpha = 0) +
   tm_shape(
     deso_karlstad %>% 
       filter(substr(deso_karlstad$deso,5,5) == "C")
-    ) +
+  ) +
   tm_borders() +
   # tm_text(
   #   "regso", 
@@ -367,27 +368,38 @@ t <- tm_shape(bb_extended) + tm_borders(alpha = 0) +
   ) +
   tm_fill("bef_antal", 
           style = "jenks", 
-          title = "folkmängd") +
+          title = "Folkmängd") +
   tm_shape(
     regso_karlstad
   ) +
   tm_borders() +
   tm_shape(mv_17) + tm_fill(col = "cadetblue1", alpha = 0.7) +
-  tm_shape(regso_karlstad) +
+  # tm_shape(regso_karlstad) +
+  # tm_text(
+  #   "RegSO",
+  #   size = 0.5,
+  #   auto.placement = TRUE,
+  #   remove.overlap = FALSE,
+  #   col = "black") +
+  tm_shape(skolenheter) +
+  tm_symbols(
+    title.size = "Antal elever",
+    size = "totalNumberOfPupils", 
+    col = "gray15", 
+    border.col = "grey15", 
+    alpha = 0.7) +
   tm_text(
-    "RegSO",
+    "name",
     size = 0.5,
     auto.placement = TRUE,
-    remove.overlap = FALSE,
+    remove.overlap = TRUE,
     col = "black") +
-  tm_shape(school_units_df) +
-  tm_symbols(size = "totalNumberOfPupils", col = "gray15", border.col = "grey15", alpha = 0.7) +
-  tm_credits("Kartdagarna 2022 | Datakälla: SCB",
+  tm_credits("Kartdagarna 2022 | Datakällor: SCB, Lantmäteriet, Skolverket",
              position=c("right", "bottom")) +
   tm_scale_bar(position=c("left", "bottom")) +
   tm_compass(type = "arrow", position=c("right", "top"), show.labels = 3) +
   tm_layout(
-    main.title = "Folkmängden per region efter ålder och kön",
+    main.title = "Folkmängd per regionalt statistikområde (RegSO)\nSkolenheter och antal elever",
     legend.format=list(fun=function(x) formatC(x, digits=0, format="d", big.mark = " "), text.separator = "-")
   )
 t

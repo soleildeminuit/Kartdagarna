@@ -56,9 +56,12 @@ for (i in 1:nrow(school_units)){
 }
 school_units_df <- do.call("rbind", l)
 school_units_df <- school_units_df %>% 
-  st_as_sf(., coords = c("lon", "lat"), crs = 4326)
+  st_as_sf(., coords = c("lon", "lat"), crs = 4326) %>% 
+  st_transform(crs = 3006)
 
 school_units_df <- school_units_df %>% 
   mutate(totalNumberOfPupils = gsub(".* (\\d{1,})$", "\\1" , totalNumberOfPupils)) %>% 
   mutate(totalNumberOfPupils = as.numeric(totalNumberOfPupils)) %>% 
   filter(!is.na(totalNumberOfPupils))
+
+st_write(school_units_df, "data/skolenheter.geojson")
