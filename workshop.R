@@ -48,6 +48,14 @@ bb_extended <- bb %>% st_buffer(5000)
 deso_karlstad <- st_as_sf(deso_karlstad)
 # "sf"         "data.frame"
 
+# GSD Terrängkarta
+mv_17 <- st_read("data/terrang/17/mv_17.shp")
+mv_17 <- mv_17 %>% 
+  st_crop(deso_karlstad) %>% 
+  filter(KATEGORI == "Vattenyta") %>% 
+  st_intersection(deso_karlstad)
+
+
 ###########################################################################
 t <- tm_shape(bb_extended) + tm_borders(alpha = 0) + 
   # tm_shape(deso_karlstad) +
@@ -198,6 +206,9 @@ tmap_save(t, "figs/karta_deso_6.png",
           dpi = 300)
 ###########################################################################
 
+# A: till största delen utanför större befolkningskoncentrationer eller tätorter.
+# B: tätortsområden som inte delas in i mindre områden. Runt existerande tätorter har ett område på 600 meter omkring och de bebyggelser inom detta områdena inkluderats och getts ett eget DeSO område, om invånarantalet överstiger 1000 och det inte är aktuellt indela dessa ytterligare, har färre än 2700 invånare.
+# C: Delområden inom stora tätorter.
 
 t <- tm_shape(bb_extended) + tm_borders(alpha = 0) + 
   tm_shape(
@@ -273,7 +284,9 @@ t <- tm_shape(bb_extended) + tm_borders(alpha = 0) +
   tm_shape(
     regso_karlstad
   ) +
-  tm_fill("bef_antal", style = "jenks", title = "folkmängd") +
+  tm_fill("bef_antal", 
+          style = "jenks", 
+          title = "folkmängd") +
   tm_shape(
     regso_karlstad
   ) +
@@ -294,6 +307,92 @@ t <- tm_shape(bb_extended) + tm_borders(alpha = 0) +
 t
 
 tmap_save(t, "figs/karta_deso_9.png", 
+          units = "mm",
+          width = 297, height = 210, 
+          dpi = 300)
+
+###########################################################################
+
+# RegSO
+
+regso_karlstad <- deso_karlstad %>% 
+  group_by(RegSOkod, RegSO) %>% 
+  summarise(bef_antal = sum(bef_antal))
+
+t <- tm_shape(bb_extended) + tm_borders(alpha = 0) + 
+  tm_shape(
+    regso_karlstad
+  ) +
+  tm_fill("bef_antal", 
+          style = "jenks", 
+          title = "folkmängd") +
+  tm_shape(
+    regso_karlstad
+  ) +
+  tm_borders() +
+  tm_shape(mv_17) + tm_fill(col = "cadetblue1", alpha = 0.7) +
+  tm_shape(regso_karlstad) +
+  tm_text(
+    "RegSO",
+    size = 0.5,
+    auto.placement = TRUE,
+    remove.overlap = FALSE,
+    col = "black") +
+  tm_credits("Kartdagarna 2022 | Datakälla: SCB",
+             position=c("right", "bottom")) +
+  tm_scale_bar(position=c("left", "bottom")) +
+  tm_compass(type = "arrow", position=c("right", "top"), show.labels = 3) +
+  tm_layout(
+    main.title = "Folkmängden per region efter ålder och kön",
+    legend.format=list(fun=function(x) formatC(x, digits=0, format="d", big.mark = " "), text.separator = "-")
+  )
+t
+
+tmap_save(t, "figs/karta_deso_10.png", 
+          units = "mm",
+          width = 297, height = 210, 
+          dpi = 300)
+
+###########################################################################
+
+# RegSO
+
+regso_karlstad <- deso_karlstad %>% 
+  group_by(RegSOkod, RegSO) %>% 
+  summarise(bef_antal = sum(bef_antal))
+
+t <- tm_shape(bb_extended) + tm_borders(alpha = 0) + 
+  tm_shape(
+    regso_karlstad
+  ) +
+  tm_fill("bef_antal", 
+          style = "jenks", 
+          title = "folkmängd") +
+  tm_shape(
+    regso_karlstad
+  ) +
+  tm_borders() +
+  tm_shape(mv_17) + tm_fill(col = "cadetblue1", alpha = 0.7) +
+  tm_shape(regso_karlstad) +
+  tm_text(
+    "RegSO",
+    size = 0.5,
+    auto.placement = TRUE,
+    remove.overlap = FALSE,
+    col = "black") +
+  tm_shape(school_units_df) +
+  tm_symbols(size = "totalNumberOfPupils", col = "gray15", border.col = "grey15", alpha = 0.7) +
+  tm_credits("Kartdagarna 2022 | Datakälla: SCB",
+             position=c("right", "bottom")) +
+  tm_scale_bar(position=c("left", "bottom")) +
+  tm_compass(type = "arrow", position=c("right", "top"), show.labels = 3) +
+  tm_layout(
+    main.title = "Folkmängden per region efter ålder och kön",
+    legend.format=list(fun=function(x) formatC(x, digits=0, format="d", big.mark = " "), text.separator = "-")
+  )
+t
+
+tmap_save(t, "figs/karta_deso_11.png", 
           units = "mm",
           width = 297, height = 210, 
           dpi = 300)
