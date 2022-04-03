@@ -473,3 +473,6 @@ tmap_save(t, "figs/karta_deso_12.png",
           units = "mm",
           width = 210, height = 297, 
           dpi = 300)
+
+###############################################
+
