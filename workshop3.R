@@ -32,6 +32,12 @@ gg <- ggplot(deso_karlstad_sf) +
 
 gg
 
+
+# 3D
+plot_gg(gg,multicore = TRUE,width=5,height=5,scale=250,windowsize=c(1400,866),
+        zoom = 0.55, phi = 30)
+
+
 library(classInt)
 ci <- classIntervals(deso_karlstad_sf$bef_antal, n = 5, style = "jenks")
 
@@ -42,13 +48,14 @@ deso_karlstad_sf <- deso_karlstad_sf %>%
 gg <- ggplot(deso_karlstad_sf) + 
   geom_sf(aes(fill=breaks)) +
   # scale_fill_gradient2(low = "darkred", mid = "grey85", high = "darkgreen", midpoint = mean(deso_karlstad$bef_antal)) +
-  scale_fill_brewer(palette = "RdYlBu") + 
-  ggthemes::theme_few()
+  scale_fill_brewer(palette = "RdYlBu", name = "Antal") + 
+  labs(caption = "Datakälla: SCB", title = "Befolkning", subtitle = "Antal invånare") +
+  theme_void()
 
 gg
 
-plot_gg(gg,multicore = TRUE,width=5,height=5,scale=250,windowsize=c(1400,866),
-        zoom = 0.55, phi = 30)
+# Spara som pdf
+ggsave(plot = gg, filename = "figs/ggplot_ex.pdf", width = 297, height = 210, units = "mm")
 
 ###########################################################################
 

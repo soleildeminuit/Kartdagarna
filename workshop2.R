@@ -6,8 +6,8 @@ png("figs/pop.png", width = 200, height = 200, units = "mm", res = 300)
 
 
 # import to an sf object
-pop <- deso_karlstad %>% 
-  filter(substr(deso_karlstad$deso,5,5) == "C")
+pop <- deso_karlstad_sf %>% 
+  filter(substr(deso_karlstad_sf$deso,5,5) == "C")
 # plot municipalities (only borders are plotted)
 plot(st_geometry(pop), col = "grey80", border = "grey")
 # plot population

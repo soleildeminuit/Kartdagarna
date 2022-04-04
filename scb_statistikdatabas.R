@@ -22,7 +22,7 @@ library(dplyr)
 # Filtrera fram DeSO för Karlstad
 pxdf <- readRDS("data/pxdf.rds")
 
-deso_karlstad <- pxdf %>% 
+deso_karlstad_df <- pxdf %>% 
   filter(grepl("^\\d{4}[A-C]\\d{4}$", region) == TRUE,
          substr(region, 1, 4) == "1780",
          ålder == "totalt", kön == "totalt") %>% 
@@ -40,10 +40,10 @@ koppling <- openxlsx::read.xlsx("data/kopplingstabell-deso_regso_20211004.xlsx",
                                 "Blad1", 
                                 startRow = 4) %>% select(-Kommun, -Kommunnamn)
 
-deso_karlstad <- deso_karlstad %>% left_join(., koppling, by = c("region" = "DeSO"))
+deso_karlstad_df <- deso_karlstad_df %>% left_join(., koppling, by = c("region" = "DeSO"))
 
 # 31
-n_distinct(deso_karlstad$RegSOkod)
+n_distinct(deso_karlstad_df$RegSOkod)
 
-View(deso_karlstad)
+View(deso_karlstad_df)
 
