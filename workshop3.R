@@ -12,37 +12,37 @@ deso <- st_read("data/DeSO_2018.gpkg")
 # Filtrera fram DeSO för Karlstad
 pxdf <- readRDS("data/pxdf.rds")
 
-deso_karlstad <- pxdf %>% 
+deso_karlstad_df <- pxdf %>% 
   filter(grepl("^\\d{4}[A-C]\\d{4}$", region) == TRUE,
-         substr(region, 1, 4) == "1784",
+         substr(region, 1, 4) == "1780",
          ålder == "totalt", kön == "totalt") %>% 
   select(-ålder, -kön) %>% 
   rename(deso = region) %>% 
   rename(bef_antal = `Folkmängden per region`)
 
 # Läg till geografi
-deso_karlstad <- left_join(deso_karlstad, deso, by = "deso") %>% 
+deso_karlstad_sf <- left_join(deso_karlstad_df, deso, by = "deso") %>% 
   st_as_sf()
 
 
-library(classInt)
-ci <- classIntervals(deso_karlstad$bef_antal, n = 5, style = "jenks")
-
-deso_karlstad <- deso_karlstad %>%
-  mutate(breaks = cut(bef_antal, ci$brks, include.lowest = T, dig.lab=10))
-
-
-gg <- ggplot(deso_karlstad) + 
+gg <- ggplot(deso_karlstad_sf) + 
   geom_sf(aes(fill=bef_antal)) +
   # scale_fill_gradient2(low = "darkred", mid = "grey85", high = "darkgreen", midpoint = mean(deso_karlstad$bef_antal)) +
   ggthemes::theme_few()
 
 gg
 
-gg <- ggplot(deso_karlstad) + 
+library(classInt)
+ci <- classIntervals(deso_karlstad_sf$bef_antal, n = 5, style = "jenks")
+
+deso_karlstad_sf <- deso_karlstad_sf %>%
+  mutate(breaks = cut(bef_antal, ci$brks, include.lowest = T, dig.lab=10))
+
+
+gg <- ggplot(deso_karlstad_sf) + 
   geom_sf(aes(fill=breaks)) +
   # scale_fill_gradient2(low = "darkred", mid = "grey85", high = "darkgreen", midpoint = mean(deso_karlstad$bef_antal)) +
-  scale_fill_brewer(palette = "RdYlBu") + theme_void()
+  scale_fill_brewer(palette = "RdYlBu") + 
   ggthemes::theme_few()
 
 gg
