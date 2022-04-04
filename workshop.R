@@ -48,9 +48,10 @@ bb_extended <- bb %>% st_buffer(5000)
 # GSD Terrängkarta
 mv_17 <- st_read("data/terrang/17/mv_17.shp")
 mv_17 <- mv_17 %>% 
-  st_crop(deso_karlstad) %>% 
+  st_crop(deso_karlstad_sf) %>% 
   filter(KATEGORI == "Vattenyta") %>% 
-  st_intersection(deso_karlstad)
+  st_intersection(deso_karlstad_sf) %>% 
+  st_make_valid()
 
 skolenheter_sf <- st_read("data/skolenheter_sf.geojson")
 
@@ -474,3 +475,40 @@ tmap_save(t, "figs/karta_deso_12.png",
 
 ###############################################
 
+# Med OpenStreetMap-vägar (workshop3)
+t <- tm_shape(bb_extended) + tm_borders(alpha = 0) + 
+  tm_shape(
+    bef_stat_5_9_sf
+  ) +
+  tm_fill("andel", 
+          style = "jenks", 
+          title = "Andel 5-9 år (%)") +
+  tm_shape(
+    bef_stat_5_9_sf
+  ) +
+  tm_borders() +
+  tm_shape(mv_17) + tm_fill(col = "cadetblue1", alpha = 0.7) +
+  tm_shape(med_streets) + tm_lines() +
+  tm_shape(skolenheter_sf) +
+  tm_symbols(
+    title.size = "Antal elever",
+    size = "totalNumberOfPupils", 
+    col = "gray15", 
+    border.col = "grey15", 
+    alpha = 0.7) +
+  tm_text(
+    "name",
+    size = 0.5,
+    auto.placement = TRUE,
+    remove.overlap = TRUE,
+    col = "black") +
+  tm_credits("Kartdagarna 2022 | Datakällor: SCB, Lantmäteriet, Skolverket",
+             position=c("right", "bottom")) +
+  tm_scale_bar(position=c("left", "bottom")) +
+  tm_compass(type = "arrow", position=c("right", "top"), show.labels = 3) +
+  tm_layout(
+    main.title = "Andel 5-9 åringar per DeSO\nskolenheter_sf och antal elever",
+    legend.format=list(fun=function(x) formatC(x, digits=0, format="d", big.mark = " "), text.separator = "-")
+  ) +
+  tmap_options(check.and.fix = TRUE)
+t

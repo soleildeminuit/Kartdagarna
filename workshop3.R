@@ -47,6 +47,8 @@ deso_karlstad_sf <- deso_karlstad_sf %>%
 
 gg <- ggplot(deso_karlstad_sf) + 
   geom_sf(aes(fill=breaks)) +
+  # OpenStreetMap
+  # geom_sf(data = med_streets, inherit.aes = FALSE, color = "black") + 
   # scale_fill_gradient2(low = "darkred", mid = "grey85", high = "darkgreen", midpoint = mean(deso_karlstad$bef_antal)) +
   scale_fill_brewer(palette = "RdYlBu", name = "Antal") + 
   labs(caption = "Datakälla: SCB", title = "Befolkning", subtitle = "Antal invånare") +
@@ -79,3 +81,36 @@ base::print(
     "karta_ppt_demo.pptx"
   )
 )
+
+###########################################################################
+library(osmdata)
+
+plot(st_geometry(regso_karlstad_sf))
+bb <- st_bbox(regso_karlstad_sf %>% st_transform(crs = 4326))
+
+big_streets <- bb %>% 
+  opq()%>%
+  add_osm_feature(key = "highway", 
+                  value = c("motorway", "primary", "motorway_link", "primary_link")) %>%
+  osmdata_sf()
+
+big_streets <- big_streets$osm_lines
+
+med_streets <- bb %>% 
+  opq()%>%
+  add_osm_feature(key = "highway", 
+                  value = c("secondary", "tertiary", "secondary_link", "tertiary_link")) %>%
+  osmdata_sf()
+
+med_streets <- med_streets$osm_lines
+
+small_streets <- bb %>% 
+  opq()%>%
+  add_osm_feature(key = "highway", 
+                  value = c("residential", "living_street",
+                            "unclassified",
+                            "service", "footway"
+                  )) %>%
+  osmdata_sf()
+
+small_streets <- small_streets$osm_lines
