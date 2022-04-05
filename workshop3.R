@@ -1,9 +1,13 @@
+source("key.R")
 library(dplyr)
 library(sf)
 library(ggplot2)
 library(ggthemes)
+library(tmap)
 library(RColorBrewer)
 library(rayshader)
+library(hereR)
+set_key(key)
 
 # Läs in geodata (Geopackage), bara geodata - inga data/statistik
 regso <- st_read("data/RegSO_2018_v1.gpkg")
@@ -48,7 +52,9 @@ deso_karlstad_sf <- deso_karlstad_sf %>%
 gg <- ggplot(deso_karlstad_sf) + 
   geom_sf(aes(fill=breaks)) +
   # OpenStreetMap
-  # geom_sf(data = med_streets, inherit.aes = FALSE, color = "black") + 
+  geom_sf(data = big_streets, inherit.aes = FALSE, color = "black", size = 0.5, alpha = 0.6) +
+  geom_sf(data = med_streets, inherit.aes = FALSE, color = "black", size = 0.3, alpha = 0.5) +
+  geom_sf(data = small_streets, inherit.aes = FALSE, color = "black", size = 0.2, alpha = 0.3) +
   # scale_fill_gradient2(low = "darkred", mid = "grey85", high = "darkgreen", midpoint = mean(deso_karlstad$bef_antal)) +
   scale_fill_brewer(palette = "RdYlBu", name = "Antal") + 
   labs(caption = "Datakälla: SCB", title = "Befolkning", subtitle = "Antal invånare") +
@@ -58,6 +64,7 @@ gg
 
 # Spara som pdf
 ggsave(plot = gg, filename = "figs/ggplot_ex.pdf", width = 297, height = 210, units = "mm")
+ggsave(plot = gg, filename = "figs/ggplot_ex.png", width = 297, height = 210, units = "mm", dpi = 600)
 
 ###########################################################################
 
@@ -95,6 +102,7 @@ big_streets <- bb %>%
   osmdata_sf()
 
 big_streets <- big_streets$osm_lines
+big_streets$name <- iconv(big_streets$name, "UTF-8")
 
 med_streets <- bb %>% 
   opq()%>%
@@ -103,6 +111,11 @@ med_streets <- bb %>%
   osmdata_sf()
 
 med_streets <- med_streets$osm_lines
+med_streets$name <- iconv(med_streets$name, "UTF-8")
+
+# Längst gatan
+x <- med_streets[which.max(st_length(med_streets)),]
+x_buff <- st_buffer(x %>% st_transform(crs = 3006), 500)
 
 small_streets <- bb %>% 
   opq()%>%
@@ -114,3 +127,32 @@ small_streets <- bb %>%
   osmdata_sf()
 
 small_streets <- small_streets$osm_lines
+
+###########################################################################
+
+# Routing
+# library(osrm)
+# 
+center <- st_centroid(st_union(regso_karlstad_sf)) %>% st_transform(crs = 4326) %>%
+  st_as_sf()
+
+sthlm <- data.frame(lat = 59.3124615, lon = 18.0699127) %>% 
+  st_as_sf(coords = c("lon", "lat"), crs = 4326)
+
+ccc <- data.frame(lat = 59.38372, lon = 13.50940) %>% 
+  st_as_sf(coords = c("lon", "lat"), crs = 4326)
+
+# 
+# isoc <- osrmIsochrone(loc = center, returnclass="sf",
+#                       breaks = seq(from = 0, to = 15, by = 5))
+
+# Isochrone for 5, 10, 15, 20, 25 and 30 minutes driving time
+isolines <- isoline(
+  poi = ccc,
+  transport_mode = "car",
+  range = seq(5, 15, 5) * 60,
+  url_only = FALSE
+)
+
+tm_shape(isolines) + tm_fill("range", style = "equal", palette = "plasma", alpha = 0.7)
+

@@ -53,7 +53,7 @@ mv_17 <- mv_17 %>%
   st_intersection(deso_karlstad_sf) %>% 
   st_make_valid()
 
-skolenheter_sf <- st_read("data/skolenheter_sf.geojson")
+skolenheter_sf <- st_read("data/skolenheter.geojson")
 
 ###########################################################################
 t <- tm_shape(bb_extended) + tm_borders(alpha = 0) + 
