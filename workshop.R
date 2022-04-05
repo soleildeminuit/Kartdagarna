@@ -39,6 +39,26 @@ deso_karlstad_df <- pxdf %>%
 deso_karlstad_sf <- left_join(deso_karlstad_df, deso_sf, by = "deso") %>% 
   st_as_sf()
 
+# För Excel
+write.table(
+  deso_karlstad_sf %>% 
+    st_drop_geometry(), 
+  quote = F, 
+  row.names = F, 
+  sep = ";", 
+  dec = ".", 
+  na = "", 
+  file = "data/deso_karlstad.csv")
+
+st_write(
+  deso_karlstad_sf %>% st_transform(crs = 4326),
+  "data/deso_karlstad.kml"
+)
+
+regso_karlstad_sf <- deso_karlstad_sf %>% 
+  group_by(RegSOkod, RegSO) %>% 
+  summarise(bef_antal = sum(bef_antal)) %>% 
+  ungroup()
 # Omskrivande rektangel
 bb <- st_bbox(deso_karlstad_sf) %>% 
   st_as_sfc() %>% st_as_sf()
